@@ -1,12 +1,16 @@
 package view;
 
+import model.expense.Expense;
 import model.user.User;
 import viewmodel.IViewModel;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collections;
+import java.util.List;
 
 public class SimpleCostManagerView implements IView {
 
@@ -14,6 +18,8 @@ public class SimpleCostManagerView implements IView {
     private LoginPage loginPage;
     private RegisterPage registerPage;
     private CostManagerAppPage costManagerApp;
+    public boolean isConnected = false;
+    public int connectedUserId;
 
     public class LoginPage {
 
@@ -30,6 +36,7 @@ public class SimpleCostManagerView implements IView {
             passwordLabel = new JLabel("password :");
             usernameField = new JTextField();
             passwordField = new JTextField();
+
             btnLogin = new JButton("Login");
             ActionListener LoginListener = new ActionListener() {
                 @Override
@@ -38,16 +45,19 @@ public class SimpleCostManagerView implements IView {
                     //TODO:Check for valid username and password and just than go to the app with specific user details.
 
                     vm.getUserDetails(usernameField.getText(), passwordField.getText());
-                    //if (connectedUserid not exist )
+                    System.out.println("Got the details and going to pass it to view model");
 
-                    //TODO:Ask the teacher how can we implement the validation of username in the db and than show the specific tables of the...
-                    //user in the view.
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        ex.printStackTrace();
+                    }
 
-                    loginframe.dispose();
-                    costManagerApp = new CostManagerAppPage();
-                    //costManagerApp.setViewModel(vm);
-                    //costManagerApp.setUserLoggedIn()//user);
-                    costManagerApp.startAppPage();
+                    if (isConnected) {
+                        loginframe.dispose();
+                        costManagerApp = new CostManagerAppPage();
+                        costManagerApp.startAppPage();
+                    }
 
                 }
             };
@@ -177,15 +187,16 @@ public class SimpleCostManagerView implements IView {
 
     public class CostManagerAppPage {
         private JFrame appframe;
-        private JCheckBox houseCheckBox, selfCareCheckBox, carCheckBox;
-        private JPanel newExpense, expenseTable, addExpenseWindow, expenseControlWindow, categoryPanel, appPanel, searchPanel;
+        private JPanel newExpense, expenseTablePanel, addExpenseWindow, expenseControlWindow, categoryPanel, appPanel, searchPanel, newCategoryPanel;
         private JList categoryList;
         private JLabel categoryLabel;
-        private JTextField sumField, currencyField, dateField, descField, priceField;
-        private JButton addExpensebtn;
-        private IViewModel vm;
+        private JTextField newCategoryTextField, currencyField, dateField, descField, priceField;
+        private JButton addExpensebtn, addNewCategory;
+        private JTable expensesTable;
         private User userLoggedIn;
-        private static final String[] categoriesItems = {"House", "Self care", "Car", "dfc", "fgfg", "fgfg", "asdads", "erfdsf"};
+        private DefaultTableModel expenseTableModel;
+        private DefaultListModel listModel;
+        private static final String[] defaultCategoriesList = {"House", "Self care", "Car", "dfc", "fgfg", "fgfg", "asdads", "erfdsf"};
 
 
         public CostManagerAppPage() {
@@ -194,121 +205,116 @@ public class SimpleCostManagerView implements IView {
             appPanel = new JPanel();
             categoryLabel = new JLabel("Category List:");
             priceField = new JTextField("Price");
-            dateField = new JTextField("Date");
+            dateField = new JTextField("YYYY-MM-DD");
             currencyField = new JTextField("Currency");
             descField = new JTextField("Description");
-            expenseTable = new JPanel();
+            expenseTablePanel = new JPanel();
             addExpenseWindow = new JPanel();
             expenseControlWindow = new JPanel();
             searchPanel = new JPanel();
             categoryPanel = new JPanel();
+            newCategoryPanel = new JPanel();
             addExpensebtn = new JButton("Add expense");
-//        houseCheckBox = new JCheckBox("House");
-//        selfCareCheckBox = new JCheckBox("Self Care");
-//        carCheckBox = new JCheckBox("Car");
+            expensesTable = new JTable();
+            expenseTableModel = new DefaultTableModel();
+            newCategoryTextField = new JTextField("Add new category");
+            addNewCategory = new JButton("Add category");
+
+            ActionListener addExpense = new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Expense expense = new Expense(connectedUserId, categoryList.getSelectedValue().toString(),
+                            Float.parseFloat(priceField.getText()) , currencyField.getText(), dateField.getText(), descField.getText());
+                    vm.add(expense);
+                }
+            };
+
+            ActionListener addNewCategoryListener = new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    listModel.addElement(newCategoryTextField.getText());
+                    System.out.println("New category has been added to the list");
+                }
+            };
+
+            addNewCategory.addActionListener(addNewCategoryListener);
+            addExpensebtn.addActionListener(addExpense);
+
+            newCategoryPanel.setLayout(new BoxLayout(newCategoryPanel,BoxLayout.Y_AXIS));
+
+            expensesTable.setModel(expenseTableModel);
+            expenseTableModel.addColumn("Category");
+            expenseTableModel.addColumn("Price");
+            expenseTableModel.addColumn("Currency");
+            expenseTableModel.addColumn("Date");
+            expenseTableModel.addColumn("Description");
         }
 
         public void fillCategoryListPanel() {
-            categoryList = new JList(categoriesItems);
+            listModel = new DefaultListModel();
+            for (String s : defaultCategoriesList){
+                listModel.addElement(s);
+            }
+            categoryList = new JList(listModel);
             categoryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             categoryList.setVisibleRowCount(4);
-
-
-//        categoryPanel.setLayout(new GridLayout(4,1));
-//        categoryPanel.setSize(new Dimension(300,300));
-//        categoryPanel.add(categoryLabel);
-//        categoryPanel.add(houseCheckBox);
-//        categoryPanel.add(selfCareCheckBox);
-//        categoryPanel.add(carCheckBox);
-//        categoryPanel.setBackground(Color.yellow);
         }
 
 
         public void startAppPage() {
 
+            // creating list object with the categories that we mentioned in category list variable.
             fillCategoryListPanel();
+            //adding the scroll list of categories into its own panel.
             categoryPanel.add(new JScrollPane(categoryList));
-            categoryPanel.setBackground(Color.yellow);
+            //add the panel that we have created into the bigger panel of addExpense.
+            addExpenseWindow.add(newCategoryPanel);
             addExpenseWindow.add(categoryPanel);
-            //addExpenseWindow.add(new JScrollPane(categoryList));
 
-            //addExpenseWindow.setBackground(Color.black);
+            newCategoryPanel.add(newCategoryTextField);
+            newCategoryPanel.add(addNewCategory);
 
-            Object[][] rowData = {{"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"},
-                    {"Adir", "Car", "300", "ILS", "Fuel"}, {"Adir", "Car", "300", "ILS", "Fuel"}};
+            expensesTable.setLayout(new FlowLayout());
 
-            Object[] columnNames = {"Username", "Category", "Price", "Currency", "Description"};
-            JTable table = new JTable(rowData, columnNames);
-            table.setLayout(new FlowLayout());
-
+            //adding the textFields and the add button to its own panel called expenseControlWindow.
             expenseControlWindow.add(priceField);
             expenseControlWindow.add(descField);
             expenseControlWindow.add(currencyField);
             expenseControlWindow.add(dateField);
             expenseControlWindow.add(addExpensebtn);
 
+            // setting the view settings of the panel expenseControlWindow.
             expenseControlWindow.setLayout(new GridLayout(3, 2));
 
-            //addExpenseWindow.add(expenseControlWindow, BorderLayout.WEST);
+            //add the panel that we have created into the bigger panel of addExpense.
             addExpenseWindow.add(expenseControlWindow);
-
-
-            expenseTable.add(new JScrollPane(table));
+            expenseTablePanel.add(new JScrollPane(expensesTable));
             appPanel.setLayout(new GridBagLayout());
-            //GridBagConstraints constraints = new GridBagConstraints();
-            //setMyConstraints(constraints,0,0,1,1);
-            //appPanel.add(categoryPanel,constraints);
-            //appPanel.add(categoryPanel);
-            //setMyConstraints(constraints,0,1,2,1);
-            //appPanel.add(expenseTable,constraints);
-            //appPanel.add(expenseTable);
-            appframe.add(expenseTable, BorderLayout.SOUTH);
-            //setMyConstraints(constraints,1,0,1,1);
-            //appPanel.add(addExpenseWindow,constraints);
-            //appPanel.add(addExpenseWindow);
+            appframe.add(expenseTablePanel, BorderLayout.SOUTH);
+
             appframe.add(addExpenseWindow, BorderLayout.NORTH);
-            //appframe.add(appPanel);
 
-
-            appframe.setSize(900, 700);
+            //set the settings of the App frame.
+            appframe.setSize(900, 600);
             appframe.setVisible(true);
         }
 
+        public void fillExpensesTable(List<Expense> expensesData)
+        {
+            expenseTableModel.setRowCount(0);
+            for(Expense expense : expensesData)
+            {
+                expenseTableModel.addRow(new Object[] {
+                        expense.getCategory(),
+                        expense.getPrice(),
+                        expense.getCurrency(),
+                        expense.getDate(),
+                        expense.getDescription()
+                });
+            }
 
-        private static void setMyConstraints(GridBagConstraints constraints, int gridx, int gridy, int anchor) {
-            constraints.gridx = gridx;
-            constraints.gridy = gridy;
-            constraints.anchor = anchor;
         }
 
-        private static void setMyConstraints(GridBagConstraints constraints, int gridx, int gridy, int gridWidth, int gridHeight) {
-            constraints.gridx = gridx;
-            constraints.gridy = gridy;
-            constraints.gridwidth = gridWidth;
-            constraints.gridheight = gridHeight;
-        }
     }
 
     public SimpleCostManagerView() {}
@@ -328,5 +334,28 @@ public class SimpleCostManagerView implements IView {
     public void startLoginPage() {
         loginPage.startLoginPage();
     }
+
+    @Override
+    public void showExpensesTable(List<Expense> expensesList) {
+
+        costManagerApp.fillExpensesTable(expensesList);
+    }
+
+    @Override
+    public void setConnectionStatus(boolean isConnected) {
+        this.isConnected = isConnected;
+    }
+
+    @Override
+    public void setConnectedUserId(int connectedUserId) {
+        this.connectedUserId = connectedUserId;
+    }
+
+    @Override
+    public void showErrorBox(String error) {
+        JOptionPane.showMessageDialog(null,error);
+    }
+
+
 }
 

@@ -8,5 +8,5 @@ import java.util.List;
 public interface ExpenseDAO {
     public int addExpense(Expense expense) throws SQLException;
     //public int updateExpense(String user) throws SQLException;
-    //public List<User> getExpenses() throws SQLException;
+    public List<Expense> getExpensesByUserId(int userId) throws SQLException;
 }

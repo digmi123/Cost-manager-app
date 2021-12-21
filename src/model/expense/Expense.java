@@ -1,7 +1,7 @@
 package model.expense;
 
 public class Expense {
-    private String userId;
+    private int userId;
     private String category;
     private Float price;
     private String currency;
@@ -12,7 +12,7 @@ public class Expense {
 
     }
 
-    public Expense(String userId, String category, Float price, String currency, String date, String description) {
+    public Expense(int userId, String category, Float price, String currency, String date, String description) {
         this.userId = userId;
         this.category = category;
         this.price = price;
@@ -21,11 +21,11 @@ public class Expense {
         this.Description = description;
     }
 
-    public String getUserId() {
+    public int getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(int userId) {
         this.userId = userId;
     }
 

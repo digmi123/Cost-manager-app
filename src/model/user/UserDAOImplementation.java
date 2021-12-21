@@ -30,9 +30,9 @@ public class UserDAOImplementation implements UserDAO {
         PreparedStatement ps = conn.prepareStatement(query);
         ps.setString(1, username);
         ps.setString(2, password);
-        User user = new User();
+        //User user = new User();
         ResultSet rs = ps.executeQuery();
-        boolean check = false;
+        //boolean check = false;
 
         if (rs.next()) {
             //user.setUser_id(rs.getInt("emp_id"));

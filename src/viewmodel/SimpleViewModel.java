@@ -8,6 +8,7 @@ import model.user.UserDAO;
 import view.IView;
 
 import javax.swing.*;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,6 +19,7 @@ public class SimpleViewModel implements IViewModel{
     private IView view;
     private ExecutorService service;
     public int connectedUserId;
+
 
     public SimpleViewModel() {
         this.service = Executors.newFixedThreadPool(3);
@@ -63,6 +65,31 @@ public class SimpleViewModel implements IViewModel{
     @Override
     public void add(Expense expense) {
         //TODO: send the expense to the model and send it to the view also in order to update the row in the table
+        service.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    expenseModel.addExpense(expense);
+                    List<Expense> expensesList = expenseModel.getExpensesByUserId(connectedUserId);
+
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            view.showExpensesTable(expensesList);
+                        }
+                    });
+
+                } catch(Exception e) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            // pop up window with msg on VIEW
+                        }
+                    });
+                }
+            }
+        });
+
     }
 
     @Override
@@ -73,7 +100,25 @@ public class SimpleViewModel implements IViewModel{
                 try {
                     connectedUserId = userModel.getUserId(username,password);
                     if(connectedUserId == 0){
-                        //Dialog box with error no user exist;
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                view.showErrorBox("There no such user with this username or password please try again");
+                            }
+                        });
+                    }
+                    else
+                    {
+                        view.setConnectionStatus(true);
+                        view.setConnectedUserId(connectedUserId);
+
+                        List<Expense> expensesList = expenseModel.getExpensesByUserId(connectedUserId);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                view.showExpensesTable(expensesList);
+                            }
+                        });
                     }
                     // 1.get the username in order to present it in the header of the app.
                     // 2.get the user id in order to query for the Expense table of specific user.
@@ -90,5 +135,7 @@ public class SimpleViewModel implements IViewModel{
             }
         });
     }
+
+
 
 }

@@ -33,6 +33,7 @@ public class Main {
         model.setViewModel(vm);
         vm.setModel(userModel);
         vm.setModel(expenseModel);
+        vm.setView(view);
         view.setViewModel(vm);
     }
 }

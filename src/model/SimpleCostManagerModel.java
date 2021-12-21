@@ -15,20 +15,6 @@ import java.util.List;
 public class SimpleCostManagerModel implements  IModel{
 
     IViewModel viewModel;
-    public static void main(String[] args) throws SQLException {
-        //UserDAOImplementation userDatabase = new UserDAOImplementation();
-        ExpenseDAOImplementation expenseDatabase = new ExpenseDAOImplementation();
-//        User user1 = new User("kkk","123456");
-//        userDatabase.add(user1);
-//        List<User> users = userDatabase.getUsers();
-//        for (User user : users) {
-//            System.out.println(user.getUsername());
-//        }
-        Expense expense1 = new Expense("1","Car",300f,"ILS","2021-12-12","Fuel");
-        expenseDatabase.addExpense(expense1);
-        System.out.println("succeed");
-
-    }
 
     private static Connection connection;
     private static final String URL = "jdbc:mysql://localhost:3306/costmanager";
