@@ -1,12 +1,9 @@
 package viewmodel;
 
 import model.IModel;
-import model.expense.Expense;
-import model.expense.ExpenseDAO;
-import model.user.User;
-import model.user.UserDAO;
+import model.Expense;
+import model.User;
 import view.IView;
-
 import javax.swing.*;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -14,8 +11,9 @@ import java.util.concurrent.Executors;
 
 public class SimpleViewModel implements IViewModel{
 
-    private UserDAO userModel;
-    private ExpenseDAO expenseModel;
+//    private UserDAO userModel;
+//    private ExpenseDAO expenseModel;
+    private IModel model;
     private IView view;
     private ExecutorService service;
     public int connectedUserId;
@@ -32,14 +30,19 @@ public class SimpleViewModel implements IViewModel{
     }
 
     @Override
-    public void setModel(UserDAO userModel) {
-        this.userModel = userModel;
+    public void setModel(IModel model) {
+        this.model = model;
     }
 
-    @Override
-    public void setModel(ExpenseDAO expenseModel) {
-        this.expenseModel = expenseModel;
-    }
+//    @Override
+//    public void setModel(UserDAO userModel) {
+//        this.userModel = userModel;
+//    }
+//
+//    @Override
+//    public void setModel(ExpenseDAO expenseModel) {
+//        this.expenseModel = expenseModel;
+//    }
 
 
     @Override
@@ -48,7 +51,7 @@ public class SimpleViewModel implements IViewModel{
             @Override
             public void run() {
                 try {
-                    userModel.addUser(user);
+                    model.addUser(user);
 
                 } catch(Exception e) {
                     SwingUtilities.invokeLater(new Runnable() {
@@ -69,8 +72,8 @@ public class SimpleViewModel implements IViewModel{
             @Override
             public void run() {
                 try {
-                    expenseModel.addExpense(expense);
-                    List<Expense> expensesList = expenseModel.getExpensesByUserId(connectedUserId);
+                    model.addExpense(expense);
+                    List<Expense> expensesList = model.getExpensesByUserId(connectedUserId);
 
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
@@ -98,7 +101,9 @@ public class SimpleViewModel implements IViewModel{
             @Override
             public void run() {
                 try {
-                    connectedUserId = userModel.getUserId(username,password);
+                    System.out.println("Hi");
+                    connectedUserId = model.getUserId(username,password);
+
                     if(connectedUserId == 0){
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
@@ -112,7 +117,7 @@ public class SimpleViewModel implements IViewModel{
                         view.setConnectionStatus(true);
                         view.setConnectedUserId(connectedUserId);
 
-                        List<Expense> expensesList = expenseModel.getExpensesByUserId(connectedUserId);
+                        List<Expense> expensesList = model.getExpensesByUserId(connectedUserId);
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {

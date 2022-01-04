@@ -1,6 +1,6 @@
 package view;
 
-import model.expense.Expense;
+import model.Expense;
 import viewmodel.IViewModel;
 
 import java.util.List;

@@ -1,15 +1,13 @@
 package view;
 
-import model.expense.Expense;
-import model.user.User;
+import model.Expense;
+import model.User;
 import viewmodel.IViewModel;
-
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collections;
 import java.util.List;
 
 public class SimpleCostManagerView implements IView {
@@ -45,7 +43,7 @@ public class SimpleCostManagerView implements IView {
                     //TODO:Check for valid username and password and just than go to the app with specific user details.
 
                     vm.getUserDetails(usernameField.getText(), passwordField.getText());
-                    System.out.println("Got the details and going to pass it to view model");
+                    System.out.println("Got the details and passed it to view model");
 
                     try {
                         Thread.sleep(100);
@@ -54,6 +52,7 @@ public class SimpleCostManagerView implements IView {
                     }
 
                     if (isConnected) {
+                        System.out.println("Checking if user connected if yes than ...");
                         loginframe.dispose();
                         costManagerApp = new CostManagerAppPage();
                         costManagerApp.startAppPage();
@@ -68,9 +67,7 @@ public class SimpleCostManagerView implements IView {
                 public void actionPerformed(ActionEvent e) {
                     loginframe.dispose();
                     registerPage = new RegisterPage();
-                    //registerPage.setViewModel(vm);
                     registerPage.startRegisterPage();
-
                 }
             };
             btnRegister.addActionListener(RegisterListener);
@@ -115,7 +112,6 @@ public class SimpleCostManagerView implements IView {
         private JTextField usernameField, passwordField;
         private JLabel usernameLabel, passwordLabel, registerPageHeader;
         private JButton btnLogin, btnRegister;
-        private IViewModel vm;
 
 
         public RegisterPage() {
@@ -164,7 +160,7 @@ public class SimpleCostManagerView implements IView {
                 public void actionPerformed(ActionEvent e) {
 
                     User user = new User(usernameField.getText(), passwordField.getText());
-                    //System.out.println(user.getUsername());
+                    System.out.println(user.getUsername());
                     vm.add(user);
                 }
             };
@@ -173,9 +169,6 @@ public class SimpleCostManagerView implements IView {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     registerFrame.dispose();
-                    //view.PagesView.LoginPage loginPage = new view.PagesView.LoginPage();
-                    //loginPage.setViewModel(vm);
-                    //loginPage.startLoginPage();
                     loginPage.startLoginPage();
                 }
             };
